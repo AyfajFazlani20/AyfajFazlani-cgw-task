@@ -9,7 +9,7 @@ public with sharing class InvoiceCreatorController {
     public String lineItemQuantity { get; set; }
     public String lineItemUnitPrice { get; set; }
 
-
+//comment
 
     public InvoiceCreatorController() {
         Map<String, String> params = ApexPages.currentPage().getParameters();
