@@ -1,52 +1,114 @@
 <apex:page controller="InvoiceCreatorController" lightningStylesheets="true">
-    <apex:form>
+    <apex:slds />
+    <style>
+        .json-content {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .phase-indicator {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background-color: #f3f3f3;
+            border-radius: 4px;
+        }
+        .btn-container {
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+
+    <apex:form >
+        <!-- Error Messages -->
+        <apex:pageMessages />
+
+        <!-- Phase 1: Display URL Parameters -->
         <apex:pageBlock title="Invoice Parameters">
             <apex:pageBlockSection columns="1">
                 <apex:outputPanel >
-                    <table class="list" border="1" cellpadding="0" cellspacing="0">
+                    <table class="slds-table slds-table_bordered">
                         <thead>
-                            <tr class="headerRow">
+                            <tr class="slds-line-height_reset">
                                 <th>Parameter</th>
                                 <th>Value from URL</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>origin_record</td>
-                                <td>{!originRecord}</td>
-                            </tr>
-                            <tr>
-                                <td>account</td>
-                                <td>{!account}</td>
-                            </tr>
-                            <tr>
-                                <td>invoice_date</td>
-                                <td>{!invoiceDate}</td>
-                            </tr>
-                            <tr>
-                                <td>invoice_due_date</td>
-                                <td>{!invoiceDueDate}</td>
-                            </tr>
-                            <tr>
-                                <td>child_relationship_name</td>
-                                <td>{!childRelationshipName}</td>
-                            </tr>
-                            <tr>
-                                <td>line_item_description</td>
-                                <td>{!lineItemDescription}</td>
-                            </tr>
-                            <tr>
-                                <td>line_item_quantity</td>
-                                <td>{!lineItemQuantity}</td>
-                            </tr>
-                            <tr>
-                                <td>line_item_unit_price</td>
-                                <td>{!lineItemUnitPrice}</td>
-                            </tr>
+                            <tr><td>origin_record</td><td>{!originRecord}</td></tr>
+                            <tr><td>account</td><td>{!accountId}</td></tr>
+                            <tr><td>invoice_date</td><td>{!invoiceDate}</td></tr>
+                            <tr><td>invoice_due_date</td><td>{!invoiceDueDate}</td></tr>
+                            <tr><td>child_relationship_name</td><td>{!childRelationshipName}</td></tr>
+                            <tr><td>line_item_description</td><td>{!lineItemDescription}</td></tr>
+                            <tr><td>line_item_quantity</td><td>{!lineItemQuantity}</td></tr>
+                            <tr><td>line_item_unit_price</td><td>{!lineItemUnitPrice}</td></tr>
                         </tbody>
                     </table>
                 </apex:outputPanel>
             </apex:pageBlockSection>
         </apex:pageBlock>
+
+        <!-- Opportunity Details -->
+        <apex:pageBlock title="Opportunity Details" rendered="{!NOT(ISNULL(opportunityRecord))}">
+            <apex:pageBlockSection columns="2">
+                <apex:outputField value="{!opportunityRecord.Name}"/>
+                <apex:outputField value="{!opportunityRecord.Account.Name}"/>
+                <apex:outputField value="{!opportunityRecord.CloseDate}"/>
+            </apex:pageBlockSection>
+
+            <!-- Opportunity Line Items -->
+            <apex:pageBlockSection title="Opportunity Line Items" columns="1">
+                <apex:pageBlockTable value="{!opportunityLineItems}" var="lineItem">
+                    <apex:column headerValue="Description" value="{!lineItem.Description}"/>
+                    <apex:column headerValue="Quantity" value="{!lineItem.Quantity}"/>
+                    <apex:column headerValue="Unit Price" value="{!lineItem.UnitPrice}"/>
+                    <apex:column headerValue="Total Price" value="{!lineItem.TotalPrice}"/>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+
+            <!-- Action Buttons -->
+            <div class="btn-container">
+                <apex:commandButton value="Show JSON"
+                                  action="{!showJSON}"
+                                  rerender="jsonSection"
+                                  status="status"
+                                  styleClass="slds-button slds-button_brand"/>
+
+                <apex:commandButton value="Create Invoice"
+                                  action="{!createInvoice}"
+                                  styleClass="slds-button slds-button_success"/>
+            </div>
+        </apex:pageBlock>
+
+        <!-- JSON Display Section -->
+        <apex:outputPanel id="jsonSection">
+            <apex:pageBlock title="Xero JSON Format" rendered="{!showJSONSection}">
+                <apex:pageBlockSection columns="1">
+                    <apex:outputPanel >
+                        <div class="json-content">
+                            <apex:outputText value="{!xeroJSON}" escape="false"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+        </apex:outputPanel>
+
+        <!-- Loading Spinner -->
+        <apex:actionStatus id="status">
+            <apex:facet name="start">
+                <div class="slds-spinner_container">
+                    <div class="slds-spinner slds-spinner_medium">
+                        <span class="slds-assistive-text">Loading...</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+
     </apex:form>
 </apex:page>
